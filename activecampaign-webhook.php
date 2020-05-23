@@ -100,10 +100,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	$correo = strtolower($_POST["contact"]["email"]);
 	
 	// Tu dirección de email, donde enviarás la notificación
-	$to = "micorreo@electronico.com";
+	$to = "mi@correopersonal.com";
 	// Asunto del email que te enviarás
 	$subject = "Lead potencial de empresa en tu lista de correo";
-	// Cuerpo del mensaje
+	// encabezado del email para que sea de texto plano
+	$headers = "Content-type: text/html; charset=UTF8" . PHP_EOL;
 
 	
 	// Comprobamos si el email recibido tiene un formato correcto de email
@@ -124,16 +125,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		if(!in_array($dominio, $proveedores))
 		{
 			// Creamos el cuerpo del email
-			$cuerpo = "Los datos del contacto son: \r\n Nombre: $nombre \r\n Apellidos: $apellidos \r\n Correo: $correo \r\n";
-			// Si no se puede enviar..
-			if(!mail($to,$subject,$body)){
-				echo "Problema enviando email desde el servidor, así que guardamos en fichero";
-				$lead = sprintf("%s %s %s\n", $nombre, $apellidos, $correo);
-				file_put_contents('activecampaign_leads.txt', $lead, FILE_APPEND);
-			} else {
-				
+			$cuerpo = "Los datos del contacto son:\r\n Nombre: $nombre \r\n Apellidos: $apellidos \r\n Correo: $correo \r\n";
+			// Si se puede enviar..
+			if(mail($to,$subject,$cuerpo,$headers)){
+
 				// Si se puede enviar.. 
 				echo "Lead enviado satisfactoriamente."; // este mensaje nunca lo verás.. solo se enviará satisfactoriamente.
+				
+			} else {
+				
+				// si no se puede enviar...
+				
+				echo "Problema enviando email desde el servidor, así que guardamos en fichero";
+				// capturamos los datos del lead en una nueva variable ...
+				$lead = sprintf("%s %s %s\n", $nombre, $apellidos, $correo);
+				// .. para escribirlos en un fichero local que posteriormente podemos recuperar.
+				file_put_contents('activecampaign_leads.txt', $lead, FILE_APPEND);
+				
 			}
 		}
 	}
